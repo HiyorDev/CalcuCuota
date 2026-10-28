@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CalcuCuota – Simulador de créditos en Chile</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="hero">
+  <button class="tg" id="tg" aria-label="Cambiar entre modo claro y oscuro" title="Cambiar tema"></button>
+  <div class="hi">
+    <div class="brand">Calcu<span>Cuota</span></div>
+    <small>Cotizador referencial · Chile 2026</small>
+    <h1>¿Cuánto vas a pagar<br>de verdad por tu crédito?</h1>
+    <p>Mira la cuota, el CAE y el costo total en Santander, BCI, BancoEstado y otros bancos, antes de ir a la sucursal.</p>
+  </div>
+</header>
+<main>
+  <div class="grid">
+    <section class="card">
+      <h2>Tu crédito</h2>
+      <label>Banco</label><select id="bank"></select>
+      <label>Monto: <span id="mv"></span></label>
+      <input type="number" id="amount" value="5000000" min="100000" step="100000">
+      <input type="range" id="amountR" min="500000" max="30000000" step="100000" value="5000000">
+      <label>Cuotas: <span id="nv"></span></label>
+      <input type="range" id="n" min="6" max="84" value="36">
+      <div class="row">
+        <div><label>Tasa mensual (%)</label><input type="number" id="rate" step="0.01"></div>
+        <div><label>Primera cuota en</label><select id="grace"><option value="0">30 días</option><option value="1">60 días</option><option value="2">90 días</option></select></div>
+      </div>
+      <div class="row">
+        <div><label>Seguro desgravamen mensual (%)</label><input type="number" id="ins" value="0" step="0.01"></div>
+        <div><label>Comisión inicial (%)</label><input type="number" id="fee" value="0" step="0.1"></div>
+      </div>
+      <div class="row">
+        <div><label>Sueldo líquido (opcional)</label><input type="number" id="inc" placeholder="Ej: 1200000" step="50000"></div>
+        <div><label>Abono extra mensual</label><input type="number" id="extra" value="0" step="10000" min="0"></div>
+      </div>
+      <div class="row">
+        <div><label>Gastos notariales ($)</label><input type="number" id="not" value="0" step="500" min="0"></div>
+        <div><label>Impuesto de timbres</label><select id="tim"><option value="1">Sí (0,066% mensual, máx. 0,8%)</option><option value="0">No</option></select></div>
+      </div>
+      <p class="note" id="bsrc"></p>
+      <p class="note">Seguro en 0% porque depende de lo que contrates. Agrégalo si tu banco te lo cobra. La tasa real la define cada banco según tu perfil.</p>
+    </section>
+    <section class="card">
+      <h2>Resultado</h2>
+      <p class="note" style="margin:0">Cuota mensual aproximada</p>
+      <p class="big" id="cuota">–</p>
+      <div class="split"><i id="sp1"></i><i id="sp2"></i></div>
+      <div class="leg"><span class="k1">Capital</span><span class="k2">Intereses y seguros</span></div>
+      <div class="kpis">
+        <div class="kpi"><small>Total a pagar</small><b id="total">–</b></div>
+        <div class="kpi"><small>Costo del crédito</small><b id="costo">–</b></div>
+        <div class="kpi"><small>CAE estimado</small><b id="cae">–</b></div>
+        <div class="kpi"><small>Tasa anual (mensual × 12)</small><b id="tae">–</b></div>
+      </div>
+      <div class="msg" id="mTmc" hidden></div>
+      <div class="msg" id="mInc" hidden></div>
+      <div class="msg ok" id="mEx" hidden></div>
+      <button class="btn" id="pdf">Descargar resumen (PDF)</button>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Comparar bancos</h2>
+    <p class="note">Mismo monto y plazo con la tasa referencial de cada banco. Toca uno para seleccionarlo.</p>
+    <div class="tabs"><button id="s1" class="on">Menor cuota</button><button id="s2">Menor CAE</button></div>
+    <div class="cmp" id="cmp"></div>
+  </section>
+
+  <section class="card">
+    <h2>Cómo baja tu deuda</h2>
+    <p class="note">Saldo pendiente mes a mes. La línea punteada muestra el efecto del abono extra.</p>
+    <svg id="ch" viewBox="0 0 600 210" role="img" aria-label="Gráfico de saldo"></svg>
+  </section>
+
+  <section class="card">
+    <h2>Tabla de amortización</h2>
+    <div class="tw"><table><thead><tr><th>Cuota</th><th>Pago</th><th>Capital</th><th>Interés</th><th>Saldo</th></tr></thead><tbody id="tb"></tbody></table></div>
+  </section>
+
+  <section class="card faq">
+    <h2>Para no equivocarte</h2>
+    <details><summary>¿Qué es el CAE?</summary><p>Es el Costo Anual Equivalente: resume intereses, seguros y comisiones en una sola tasa anual. Compara bancos por CAE, no solo por la tasa mensual.</p></details>
+    <details><summary>¿Cuánto de mi sueldo debería ir a cuotas?</summary><p>Una regla común es no pasar del 30% del sueldo líquido sumando todas tus deudas. Sobre 40% el riesgo de atrasarte sube bastante.</p></details>
+    <details><summary>¿Conviene abonar antes de tiempo?</summary><p>Casi siempre sí: cada peso extra va directo a capital y reduce los intereses futuros. Revisa con tu banco si cobra costo por prepago.</p></details>
+    <details><summary>¿Por qué mi cotización real es distinta?</summary><p>El banco ajusta la tasa según tu historial, renta, antigüedad laboral y producto. Este simulador es una guía, no una oferta.</p></details>
+  </section>
+
+  <section class="card">
+    <h2>¿Cómo calculamos?</h2>
+    <p class="note">Estas son las fórmulas que usa el simulador. P es el monto que recibes, P<sub>b</sub> el monto bruto financiado, n las cuotas, r la tasa mensual (en decimal, 1,39% = 0,0139) y g los meses de gracia.</p>
+
+    <p class="fxh">0. Monto bruto (lo que realmente se financia)</p>
+    <div class="fx">P<sub>b</sub> = (P · (1 + f) + G) / (1 − t)</div>
+    <p class="fxn">f es la comisión, G los gastos notariales y t el impuesto de timbres: t = mín(0,066% · n; 0,8%) (Decreto Ley 3.475). El banco financia el impuesto, por eso se calcula sobre el monto bruto.</p>
+
+    <p class="fxh">1. Cuota base (sistema francés, cuota fija)</p>
+    <div class="fx">C = P<sub>b</sub> · r / (1 − (1 + r)<sup>−n</sup>)</div>
+    <p class="fxn">Si la tasa es 0%, la cuota es simplemente C = P<sub>b</sub> / n.</p>
+
+    <p class="fxh">2. Período de gracia</p>
+    <div class="fx">C<sub>g</sub> = C · (1 + r)<sup>g</sup></div>
+    <p class="fxn">Si la primera cuota es a 60 o 90 días, el saldo sigue ganando interés y por eso la cuota sube un poco.</p>
+
+    <p class="fxh">3. Seguro de desgravamen</p>
+    <div class="fx">S = P<sub>b</sub> · s</div>
+    <p class="fxn">s es el porcentaje mensual del seguro. Es una simplificación: lo calculamos sobre el monto bruto, aunque muchos bancos lo cobran sobre el saldo.</p>
+
+    <p class="fxh">4. Cuota mensual total</p>
+    <div class="fx">Cuota = C<sub>g</sub> + S</div>
+
+    <p class="fxh">5. Total a pagar y costo del crédito</p>
+    <div class="fx">Total = Cuota · n</div>
+    <div class="fx">Costo = Total − P</div>
+
+    <p class="fxh">6. Tabla de amortización (mes k)</p>
+    <div class="fx">Interés<sub>k</sub> = Saldo<sub>k−1</sub> · r</div>
+    <div class="fx">Capital<sub>k</sub> = C<sub>g</sub> − Interés<sub>k</sub></div>
+    <div class="fx">Saldo<sub>k</sub> = Saldo<sub>k−1</sub> − Capital<sub>k</sub></div>
+    <p class="fxn">El saldo inicial es P · (1 + r)<sup>g</sup>. Al principio pagas más interés y al final más capital.</p>
+
+    <p class="fxh">7. Tasa anual</p>
+    <div class="fx">Tasa anual = r · 12</div>
+    <p class="fxn">Así la informan los bancos: tasa mensual por 12, sin capitalizar.</p>
+
+    <p class="fxh">8. CAE (Costo Anual Equivalente), método oficial</p>
+    <div class="fx">P = Σ<sub>k=1..n+g</sub> Pago<sub>k</sub> / (1 + i)<sup>k</sup></div>
+    <div class="fx">CAE = i · 12</div>
+    <p class="fxn">i es la tasa mensual que iguala lo que recibes (P) con todo lo que pagas: cuotas, seguro, impuesto y gastos. Se multiplica por 12, sin capitalizar. No tiene despeje directo, así que se resuelve por aproximaciones sucesivas (bisección). Es el mismo método del reglamento del SERNAC.</p>
+
+    <p class="fxh">9. Peso de la cuota en tu sueldo</p>
+    <div class="fx">% sueldo = Cuota / Sueldo líquido · 100</div>
+    <p class="fxn">Verde hasta 30%, amarillo hasta 40% y rojo sobre 40%.</p>
+
+    <p class="fxh">10. Abono extra mensual</p>
+    <div class="fx">Capital<sub>k</sub> = C<sub>g</sub> + Extra − Interés<sub>k</sub></div>
+    <div class="fx">Ahorro = Total sin abono − Total con abono</div>
+    <p class="fxn">El abono baja el saldo más rápido, se pagan menos intereses y el crédito termina antes.</p>
+
+    <p class="fxh">Ejemplo con los valores iniciales</p>
+    <p class="fxn">P = $5.000.000 · n = 36 · r = 1,39% · sin seguro · con timbres (t = 0,8%):<br>
+    P<sub>b</sub> = 5.000.000 / (1 − 0,008) = <b>$5.040.323</b><br>
+    C = P<sub>b</sub> · 0,0139 / (1 − 1,0139<sup>−36</sup>) = <b>$178.900</b><br>
+    Total = $6.440.384 · Costo = $1.440.384 · CAE ≈ <b>17.26%</b></p>
+    <p class="fxn">Comprobación con el ejemplo publicado por Santander ($10.000.000 a 48 cuotas, 1,39%): el simulador da cuota $289.211 y CAE 17.13%. El banco informa cuota $290.495 y CAE 17,38%; la diferencia es el seguro que ellos incluyen.</p>
+  </section>
+
+  <section class="card" id="datos">
+  <h2>Datos oficiales usados · 27 oct 2026</h2>
+  <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+    <div class="kpi"><small>Valor UF</small><b>$41.226,39</b></div>
+    <div class="kpi"><small>Tasa máxima convencional (anual)</small><b>41,02% · 34,02% · 30,03%</b><small>hasta 50 UF · hasta 200 UF · hasta 5.000 UF. CMF, vigente desde 15-oct-2026</small></div>
+    <div class="kpi"><small>Impuesto de timbres</small><b>0,066% mensual</b><small>tope 0,8% (DL 3.475, SII)</small></div>
+  </div>
+  <p class="note" style="margin-top:12px">CalcuCuota es una herramienta independiente: no pertenece a ningún banco y no es una oferta. Verifica en <a href="https://www.cmfchile.cl" target="_blank" rel="noopener">CMF</a>, <a href="https://www.sernac.cl" target="_blank" rel="noopener">SERNAC</a> y <a href="https://www.sii.cl/valores_y_fechas/uf/uf2026.htm" target="_blank" rel="noopener">SII (UF)</a>.</p>
+</section>
+
+  <p class="note">UF, tasa máxima convencional e impuesto de timbres son datos oficiales. Las tasas por banco son referencias tomadas de ejemplos publicados y comparadores (cada una indica su fuente y fecha); las marcadas como estimación no son datos del banco. El CAE se calcula con el método oficial (tasa mensual × 12) pero el que vale es el de tu cotización. No es oferta ni asesoría financiera.</p>
+</main>
+<script src="app.js" defer></script>
+</body>
+</html>
